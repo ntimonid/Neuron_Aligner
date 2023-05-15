@@ -34,4 +34,4 @@ try:
 except ImportError:
     from urllib.parse import urljoin
 
-from pycpd.rigid_registration import RigidRegistration
+from cpd_registration import RigidRegistration

@@ -4,7 +4,7 @@ def load_useful_variables(data_repository):
 
     try:
         with open(os.path.join(data_repository, 'ccf3_acr2id.json')) as fp:
-          acr2id = json.load(fp)
+            acr2id = json.load(fp)
         with open(os.path.join(data_repository,'ancestorsById.json')) as fp:
             ancestorsById = json.load(fp)
     except:
@@ -297,3 +297,10 @@ def Acro2Morpho(acronym, mode = 'mouselight', morpho_dict = None):
         experiment_ids = [val for val in morpho_dict[acronym]]
 
     return experiment_ids
+
+
+def is_positive_semi_definite(R):
+    if not isinstance(R, (np.ndarray, np.generic)):
+        raise ValueError('Encountered an error while checking if the matrix is positive semi definite. \
+            Expected a numpy array, instead got : {}'.format(R))
+    return np.all(np.linalg.eigvals(R) > 0)
