@@ -91,10 +91,18 @@ def GetNeuronInfo(neuronName):
         else:
             scale = '{}'.format(res)
 
-        if somaCoord[2] > 11400//2: # time to flip
-            hemisphere = 'right'
-        else:
-            hemisphere = 'left'
+        far_right = [11400 if unit == 1 else 11400//25][0]
+         
+        if orient == 'PIR':
+            if somaCoord[2] > far_right//2: # time to flip
+                hemisphere = 'right'
+            else:
+                hemisphere = 'left'
+        elif orient == 'LIP':
+            if somaCoord[0] < far_right//2: # time to flip
+                hemisphere = 'right'
+            else:
+                hemisphere = 'left'
 
         return contents, orient, scale, position, encoding, hemisphere
 
@@ -132,10 +140,10 @@ def flip(file_content, orient):
     flipped = '(flipped)'
     neuron = json.loads(zlib.decompress(file_content, 16+zlib.MAX_WBITS) )
     lrPos = 1 + orient.find('L') + orient.find('R')
-    print(lrPos)
 
     for coord in neuron['treePoints']['data']:
         coord[lrPos] = 11400-coord[lrPos]
+
     file_content = json.dumps(neuron)
     encoding = ""
 
