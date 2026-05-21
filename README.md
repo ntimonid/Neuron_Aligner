@@ -5,6 +5,7 @@ Given a list of publicly available morphologies whose soma location resides in a
 
 
 ## References
-This code has been used in the following published work:
-Timonidis, Nestor, et al. "Translating single-neuron axonal reconstructions into meso-scale connectivity statistics in the mouse somatosensory thalamus." Frontiers in neuroinformatics 17 (2023): 1272243. doi: 10.3389/fninf.2023.1272243
+This code has been used in the following published work:  
+Timonidis, Nestor, et al. "Translating single-neuron axonal reconstructions into meso-scale connectivity statistics in the mouse somatosensory thalamus." Frontiers in neuroinformatics 17 (2023): 1272243.   
+doi: 10.3389/fninf.2023.1272243
 
