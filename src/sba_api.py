@@ -1,26 +1,13 @@
-# Initialization of utilized libraries
-
-from cfg import *
-
-# +
-# main_path = os.path.abspath('../../')
-# lib_dir = os.path.join(main_path,'Libraries')
-# data_repository = os.path.join(main_path,'Data Repositories/mouse_connectivity')
-# mouselight_dir = os.path.join(main_path,'Data Repositories/Mouselight/json')
-# braintell_dir = os.path.join(main_path,'Data Repositories/Braintell')
-
-# sys.path.append(main_path)
-# sys.path.append(lib_dir)
-
-# from Libraries.cfg import *
-from NeuronMorphology import NeuronMorphology
-import rpc_interface
-from utils import *
+from typing import Dict, List, Any, Optional
+from src.neuron_morphology import NeuronMorphology
+from src.cpd_registration import RigidRegistration
+from src import rpc_interface
+from src.utils import *
 
 
 class SBA_interface:
 
-    def __init__(self, sbaHostAlpha = None, sbaHostIncf = None):
+    def __init__(self, sbaHostAlpha: Optional[str] = None, sbaHostIncf: Optional[str] = None) -> None:
 
         if sbaHostAlpha is None:
             sbaHostAlpha = 'https://neuroinformatics.nl/sba-alpha/www'
@@ -33,10 +20,10 @@ class SBA_interface:
           interfaceScript = sbaHostIncf+'/js/rpc-interface.js'
         )
 
-        self.soma_thr = None
-        self.cpd_params = None
+        self.soma_thr: Optional[int] = None
+        self.cpd_params: Optional[Dict[str, Any]] = None
 
-    def set_cpd_params(self,cpd_params = None, soma_thr = None):
+    def set_cpd_params(self, cpd_params: Optional[Dict[str, Any]] = None, soma_thr: Optional[int] = None) -> None:
         if cpd_params is None:
             self.cpd_params = {'max_it': 3, 'flag_in' : [1,1,-1], 'tol' : 0.001, 'branch_constraint': False}
         else:
@@ -46,7 +33,7 @@ class SBA_interface:
         else:
             self.soma_thr = soma_thr
 
-    def create_soma_object(self, mySomaLocations, myRegion):
+    def create_soma_object(self, mySomaLocations: Dict[str, Any], myRegion: str) -> Dict[str, Any]:
         self.mySomaLocations = mySomaLocations
 
         markers = []

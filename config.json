@@ -1,0 +1,10 @@
+{
+  "myRegion": "VPM",
+  "cpd_params": {
+    "max_it": 3,
+    "flag_in": [1, 1, -1],
+    "tol": 0.001,
+    "branch_constraint": false
+  },
+  "soma_thr": 30
+}

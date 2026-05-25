@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "neuron_aligner"
+version = "0.1.0"
+authors = [
+  { name="Nestor Timonidis", email="nostos91@gmail.com" },
+]
+description = "A modular pipeline for segmentation, registration, and analysis of large-scale high-resolution neuro-anatomical imaging data."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "allensdk",
+    "numpy",
+    "pandas",
+    "requests",
+    "wget",
+    "ipywidgets",
+    "matplotlib",
+    "pickle"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

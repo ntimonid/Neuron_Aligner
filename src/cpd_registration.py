@@ -1,8 +1,13 @@
 from builtins import super
 import numpy as np
 import numbers
-from em_alignment import EMRegistration
-from utils import is_positive_semi_definite
+from src.em_alignment import EMRegistration
+
+def is_positive_semi_definite(R):
+    if not isinstance(R, (np.ndarray, np.generic)):
+        raise ValueError('Encountered an error while checking if the matrix is positive semi definite. \
+            Expected a numpy array, instead got : {}'.format(R))
+    return np.all(np.linalg.eigvals(R) > 0)
 
 
 class RigidRegistration(EMRegistration):
@@ -42,11 +47,11 @@ class RigidRegistration(EMRegistration):
         #raise ValueError(
         #    'Rigid registration only supports 2D or 3D point clouds. Instead got {}.'.format(self.D))
 
-        if R is not None and (R.ndim is not 2 or R.shape[0] is not self.D or R.shape[1] is not self.D or not is_positive_semi_definite(R)):
+        if R is not None and (R.ndim != 2 or R.shape[0] != self.D or R.shape[1] != self.D or not is_positive_semi_definite(R)):
             raise ValueError(
                 'The rotation matrix can only be initialized to {}x{} positive semi definite matrices. Instead got: {}.'.format(self.D, self.D, R))
 
-        if t is not None and (t.ndim is not 2 or t.shape[0] is not 1 or t.shape[1] is not self.D):
+        if t is not None and (t.ndim != 2 or t.shape[0] != 1 or t.shape[1] != self.D):
             raise ValueError(
                 'The translation vector can only be initialized to 1x{} positive semi definite matrices. Instead got: {}.'.format(self.D, t))
 

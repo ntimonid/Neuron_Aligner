@@ -1,4 +1,4 @@
-from cfg import *
+from src.cfg import *
 
 # unitCode:
 # - string that defines unit, with in-between brackets a multiplier in one or more dimensions.

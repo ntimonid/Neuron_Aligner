@@ -1,0 +1,10 @@
+allensdk
+numpy
+pandas
+requests
+wget
+ipywidgets
+matplotlib
+pickle
+fastapi
+uvicorn
