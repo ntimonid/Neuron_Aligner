@@ -4,8 +4,7 @@ import socketserver
 import logging
 from src import config
 from src import sba_api
-from src.utils import load_useful_variables
-from src.rpc_interface import RpcInterface
+from legacy.rpc_interface import RpcInterface
 
 logger = logging.getLogger(__name__)
 

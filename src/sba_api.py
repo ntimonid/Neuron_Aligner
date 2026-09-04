@@ -1,7 +1,8 @@
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any, Optional
 from src.neuron_morphology import NeuronMorphology
 from src.cpd_registration import RigidRegistration
-from src import rpc_interface
+from src.synthetic_morphology import MorphologyInterpolator
+from legacy import rpc_interface
 from src.utils import *
 
 
@@ -124,6 +125,28 @@ def compare_source_to_targets(source_neuron, target_neuron_ids, cpd_params = Non
         Affinity_dict[source_name][target_name] = MSE_trs # MSE
 
     return Affinity_dict
+
+
+def create_synthetic_morphology(target_morpho, source_morpho, weight, **cpd_params):
+    """
+    Creates a synthetic morphology between target_morpho and source_morpho based on a weight.
+    
+    Parameters:
+    target_morpho: NeuronMorphology or dict (morphology 1)
+    source_morpho: NeuronMorphology or dict (morphology 2)
+    weight: float (0 to 1) - 1.0 means fully warped to target, 0.0 means source.
+    cpd_params: parameters for NonRigidRegistration
+    
+    Returns:
+    synthetic_morphology: NeuronMorphology
+    """
+    if isinstance(target_morpho, dict):
+        target_morpho = NeuronMorphology(neuronDict=target_morpho)
+    if isinstance(source_morpho, dict):
+        source_morpho = NeuronMorphology(neuronDict=source_morpho)
+        
+    interpolator = MorphologyInterpolator(target_morpho, source_morpho)
+    return interpolator.interpolate(weight, **cpd_params)
 
 
 ### Call the click handler

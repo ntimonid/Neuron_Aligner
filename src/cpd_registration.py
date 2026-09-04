@@ -148,3 +148,103 @@ class RigidRegistration(EMRegistration):
 
         """
         return self.s, self.R, self.t
+
+
+class NonRigidRegistration(EMRegistration):
+    """
+    Non-rigid registration.
+
+    Attributes
+    ----------
+    beta: float (positive)
+        Width of the Gaussian kernel.
+
+    lambda_reg: float (positive)
+        Regularization parameter.
+
+    W: numpy array
+        MxD matrix of displacement field weights.
+
+    G: numpy array
+        MxM Gaussian kernel matrix.
+
+    """
+
+    def __init__(self, beta=None, lambda_reg=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.beta = 2.0 if beta is None else beta
+        self.lambda_reg = 2.0 if lambda_reg is None else lambda_reg
+        self.W = np.zeros((self.M, self.D))
+        self.G = self.compute_gaussian_kernel(self.Y, self.Y, self.beta)
+        self.adj_mask = None
+        if 'adj_mask' in kwargs:
+            self.adj_mask = kwargs['adj_mask']
+
+    def compute_gaussian_kernel(self, Y1, Y2, beta):
+        diff = Y1[:, None, :] - Y2[None, :, :]
+        dist = np.sum(diff ** 2, axis=2)
+        return np.exp(-dist / (2 * beta ** 2))
+
+    def update_transform(self):
+        """
+        Calculate a new estimate of the non-rigid transformation.
+        """
+        # P1 is Mx1, need diagonal matrix of P1 for P1_diag
+        P1_diag = np.diag(self.P1)
+        # Solve linear system: (P1_diag * G + lambda_reg * sigma2 * I) * W = P * X - P1_diag * Y
+        A = np.dot(P1_diag, self.G) + self.lambda_reg * self.sigma2 * np.eye(self.M)
+        B = np.dot(self.P, self.X) - np.dot(P1_diag, self.Y)
+        self.W = np.linalg.solve(A, B)
+
+    def transform_point_cloud(self, Y=None):
+        """
+        Update a point cloud using the new estimate of the non-rigid transformation.
+        """
+        if Y is None:
+            self.TY = self.Y + np.dot(self.G, self.W)
+            return
+        else:
+            G_new = self.compute_gaussian_kernel(Y, self.Y, self.beta)
+            return Y + np.dot(G_new, self.W)
+
+    def update_variance(self):
+        """
+        Update the variance of the mixture model.
+        """
+        qprev = self.q
+        
+        # Standard non-rigid CPD variance update:
+        # sigma2 = (||X - TY||^2 + lambda_reg * trace(W^T * G * W)) / (N*D)
+        
+        # Need TY = Y + GW
+        TY = self.Y + np.dot(self.G, self.W)
+        
+        # Calculate ||X - TY||^2
+        # This part is complex due to probabilistic weights P.
+        # Following standard CPD:
+        # sigma2 = (sum(sum(P * ||X - TY||^2))) / (Np * D)
+        
+        # But wait, EMRegistration does sigma2 update.
+        # The base EMRegistration calls this update_variance.
+        # Let's simplify and use the common form.
+        
+        # ||X - TY||^2 weighted by P
+        diff = self.X[None, :, :] - TY[:, None, :]
+        sq_diff = np.sum(diff ** 2, axis=2)
+        
+        # P is MxN
+        # ||X - TY||^2 weighted by P
+        self.sigma2 = np.sum(self.P * sq_diff) / (self.Np * self.D)
+        
+        # Regularization term (trace(W^T * G * W))
+        reg = self.lambda_reg * np.trace(np.dot(self.W.T, np.dot(self.G, self.W)))
+        self.sigma2 += reg / (self.Np * self.D)
+        
+        if self.sigma2 <= 0:
+            self.sigma2 = self.tolerance / 10
+
+    def get_registration_parameters(self):
+        """
+        Return the current estimate of the non-rigid transformation parameters.
+        """
+        return self.W, self.beta, self.lambda_reg
