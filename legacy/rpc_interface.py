@@ -1,17 +1,11 @@
 # FIXME: check the rpc-interface.js version and warn if incompatible
 
 # support python 2.7+ and 3
-from cfg import *
+from src.cfg import *
 
 def JS(s):
-  out = widgets.Output()
-  done = False
-  with out:
-    display(Javascript(s),transient=True)
-    out.clear_output()
-    done = True
-  if not done:
-    display(Javascript(s),transient=True)
+  print("Javascript injection requested (copy this to browser console if needed):")
+  print(s)
 
 # The RPC Interface talks to a web-based app, hosted at `remoteUrl`
 # The communication is mediated by a javascript module hosted at `interfaceScript`,
@@ -30,13 +24,14 @@ if (!window.global_rpcInterfaces) window.global_rpcInterfaces = {{}};
     const rpc = new mod.rpcInterface_class('{}','{}');
     rpc.jupyterResponseHandler = (packedResponse,callback) => {{
       if (callback) {{
-        if (IPython && IPython.notebook && IPython.notebook.kernel) {{
-          const kernel = IPython.notebook.kernel;
-          const pyCommand = 'response = {}.unpackResponse(r\\''+packedResponse+'\\')\\nif "result" in response:\\n  '+callback+'(response[\\'result\\'])\\nelif "method" in response:\\n  {}.send(response,r\\''+callback+'\\')';
-          kernel.execute(pyCommand);
-        }} else {{
-          console.log('Cannot execute callback, IPython.notebook.kernel is not exposed.')
-        }}
+        fetch('http://localhost:8000/callback', {{
+          method: 'POST',
+          headers: {{'Content-Type': 'application/json'}},
+          body: JSON.stringify({{
+            packedResponse: packedResponse,
+            callback: callback
+          }})
+        }});
       }}
     }}
     resolve(rpc);

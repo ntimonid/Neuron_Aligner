@@ -1,26 +1,14 @@
-# Initialization of utilized libraries
-
-from cfg import *
-
-# +
-# main_path = os.path.abspath('../../')
-# lib_dir = os.path.join(main_path,'Libraries')
-# data_repository = os.path.join(main_path,'Data Repositories/mouse_connectivity')
-# mouselight_dir = os.path.join(main_path,'Data Repositories/Mouselight/json')
-# braintell_dir = os.path.join(main_path,'Data Repositories/Braintell')
-
-# sys.path.append(main_path)
-# sys.path.append(lib_dir)
-
-# from Libraries.cfg import *
-from NeuronMorphology import NeuronMorphology
-import rpc_interface
-from utils import *
+from typing import Dict, Any, Optional
+from src.neuron_morphology import NeuronMorphology
+from src.cpd_registration import RigidRegistration
+from src.synthetic_morphology import MorphologyInterpolator
+from legacy import rpc_interface
+from src.utils import *
 
 
 class SBA_interface:
 
-    def __init__(self, sbaHostAlpha = None, sbaHostIncf = None):
+    def __init__(self, sbaHostAlpha: Optional[str] = None, sbaHostIncf: Optional[str] = None) -> None:
 
         if sbaHostAlpha is None:
             sbaHostAlpha = 'https://neuroinformatics.nl/sba-alpha/www'
@@ -33,10 +21,10 @@ class SBA_interface:
           interfaceScript = sbaHostIncf+'/js/rpc-interface.js'
         )
 
-        self.soma_thr = None
-        self.cpd_params = None
+        self.soma_thr: Optional[int] = None
+        self.cpd_params: Optional[Dict[str, Any]] = None
 
-    def set_cpd_params(self,cpd_params = None, soma_thr = None):
+    def set_cpd_params(self, cpd_params: Optional[Dict[str, Any]] = None, soma_thr: Optional[int] = None) -> None:
         if cpd_params is None:
             self.cpd_params = {'max_it': 3, 'flag_in' : [1,1,-1], 'tol' : 0.001, 'branch_constraint': False}
         else:
@@ -46,7 +34,7 @@ class SBA_interface:
         else:
             self.soma_thr = soma_thr
 
-    def create_soma_object(self, mySomaLocations, myRegion):
+    def create_soma_object(self, mySomaLocations: Dict[str, Any], myRegion: str) -> Dict[str, Any]:
         self.mySomaLocations = mySomaLocations
 
         markers = []
@@ -137,6 +125,28 @@ def compare_source_to_targets(source_neuron, target_neuron_ids, cpd_params = Non
         Affinity_dict[source_name][target_name] = MSE_trs # MSE
 
     return Affinity_dict
+
+
+def create_synthetic_morphology(target_morpho, source_morpho, weight, **cpd_params):
+    """
+    Creates a synthetic morphology between target_morpho and source_morpho based on a weight.
+    
+    Parameters:
+    target_morpho: NeuronMorphology or dict (morphology 1)
+    source_morpho: NeuronMorphology or dict (morphology 2)
+    weight: float (0 to 1) - 1.0 means fully warped to target, 0.0 means source.
+    cpd_params: parameters for NonRigidRegistration
+    
+    Returns:
+    synthetic_morphology: NeuronMorphology
+    """
+    if isinstance(target_morpho, dict):
+        target_morpho = NeuronMorphology(neuronDict=target_morpho)
+    if isinstance(source_morpho, dict):
+        source_morpho = NeuronMorphology(neuronDict=source_morpho)
+        
+    interpolator = MorphologyInterpolator(target_morpho, source_morpho)
+    return interpolator.interpolate(weight, **cpd_params)
 
 
 ### Call the click handler

@@ -1,7 +1,6 @@
+from src.utils import *
+from src import convertAllenSpace as CAS
 
-from cfg import *
-from utils import *
-import convertAllenSpace as CAS
 
 class NeuronMorphology:
 

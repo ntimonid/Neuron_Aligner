@@ -1,6 +1,8 @@
-from cfg import *
+from src.cfg import *
 
 def load_useful_variables(data_repository):
+    
+    data_repository = os.path.abspath(data_repository)
 
     try:
         with open(os.path.join(data_repository, 'ccf3_acr2id.json')) as fp:
@@ -91,18 +93,10 @@ def GetNeuronInfo(neuronName):
         else:
             scale = '{}'.format(res)
 
-        far_right = [11400 if unit == 1 else 11400//25][0]
-         
-        if orient == 'PIR':
-            if somaCoord[2] > far_right//2: # time to flip
-                hemisphere = 'right'
-            else:
-                hemisphere = 'left'
-        elif orient == 'LIP':
-            if somaCoord[0] < far_right//2: # time to flip
-                hemisphere = 'right'
-            else:
-                hemisphere = 'left'
+        if somaCoord[2] > 11400//2: # time to flip
+            hemisphere = 'right'
+        else:
+            hemisphere = 'left'
 
         return contents, orient, scale, position, encoding, hemisphere
 
@@ -140,10 +134,10 @@ def flip(file_content, orient):
     flipped = '(flipped)'
     neuron = json.loads(zlib.decompress(file_content, 16+zlib.MAX_WBITS) )
     lrPos = 1 + orient.find('L') + orient.find('R')
+    print(lrPos)
 
     for coord in neuron['treePoints']['data']:
         coord[lrPos] = 11400-coord[lrPos]
-
     file_content = json.dumps(neuron)
     encoding = ""
 
@@ -307,8 +301,3 @@ def Acro2Morpho(acronym, mode = 'mouselight', morpho_dict = None):
     return experiment_ids
 
 
-def is_positive_semi_definite(R):
-    if not isinstance(R, (np.ndarray, np.generic)):
-        raise ValueError('Encountered an error while checking if the matrix is positive semi definite. \
-            Expected a numpy array, instead got : {}'.format(R))
-    return np.all(np.linalg.eigvals(R) > 0)
